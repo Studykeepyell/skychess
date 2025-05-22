@@ -1,0 +1,41 @@
+# .github/workflows/ci.yml
+name: C++ Build & Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1) Check out your code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2) Install dependencies (if any)
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y \
+             cmake build-essential
+
+      # 3) Configure CMake
+      - name: Configure project
+        working-directory: ./  # adjust if your CMakeLists is in a subfolder
+        run: |
+          mkdir -p build
+          cd build
+          cmake ..
+
+      # 4) Build
+      - name: Build
+        working-directory: build
+        run: cmake --build . --config Release
+
+      # 5) (Optional) Run your tests
+      - name: Run tests
+        working-directory: build
+        run: ctest --output-on-failure
+
