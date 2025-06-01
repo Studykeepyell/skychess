@@ -1,0 +1,27 @@
+
+#pragma once
+#include <array>
+#include <vector>
+#include <string>
+#include "Move.hpp"
+
+namespace chess::engine {
+
+/// A minimal, non-optimised 64-element array board.
+class Board {
+public:
+    Board();                      // initial position
+    explicit Board(const std::string& fen);
+
+    const std::array<PieceType, 64>& pieces() const { return squares_; }
+    Color sideToMove() const { return stm_; }
+
+    std::vector<Move> legalMoves() const;     // TODO  – empty for now
+    bool makeMove(const Move& m);             // TODO  – always true for now
+
+private:
+    std::array<PieceType, 64> squares_{};
+    Color stm_{Color::White};
+};
+
+} // namespace chess::engine
