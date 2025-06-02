@@ -1,5 +1,0 @@
-/home/skyjin/Code/skychess/build/CMakeFiles/engine.dir
-/home/skyjin/Code/skychess/build/CMakeFiles/gui.dir
-/home/skyjin/Code/skychess/build/CMakeFiles/chess_gui.dir
-/home/skyjin/Code/skychess/build/CMakeFiles/edit_cache.dir
-/home/skyjin/Code/skychess/build/CMakeFiles/rebuild_cache.dir

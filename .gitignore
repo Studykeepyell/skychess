@@ -1,0 +1,26 @@
+
+# === build artifacts ===
+/build/
+/build-*/
+
+# CMake leftovers
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+
+# Compiled objects, libs, executables
+*.o
+*.obj
+*.a
+*.lib
+*.dll
+*.so
+*.dylib
+*.exe
+*.pdb
+
+# IDE clutter (optional)
+.vscode/
+.idea/
+*.user

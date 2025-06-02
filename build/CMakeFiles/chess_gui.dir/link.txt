@@ -1,1 +1,0 @@
-/usr/bin/c++ -g -Wl,--dependency-file=CMakeFiles/chess_gui.dir/link.d CMakeFiles/chess_gui.dir/src/main.cpp.o -o chess_gui  -Wl,-rpath,/opt/sfml2/lib libgui.a libengine.a /opt/sfml2/lib/libsfml-graphics.so.2.6.2 /opt/sfml2/lib/libsfml-window.so.2.6.2 /opt/sfml2/lib/libsfml-system.so.2.6.2
