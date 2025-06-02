@@ -1,0 +1,20 @@
+[
+{
+  "directory": "/home/skyjin/Code/skychess/build",
+  "command": "/usr/bin/c++  -I/home/skyjin/Code/skychess/include -g -std=gnu++20 -o CMakeFiles/engine.dir/src/engine/Board.cpp.o -c /home/skyjin/Code/skychess/src/engine/Board.cpp",
+  "file": "/home/skyjin/Code/skychess/src/engine/Board.cpp",
+  "output": "CMakeFiles/engine.dir/src/engine/Board.cpp.o"
+},
+{
+  "directory": "/home/skyjin/Code/skychess/build",
+  "command": "/usr/bin/c++  -I/home/skyjin/Code/skychess/include -isystem /opt/sfml2/include -g -std=gnu++20 -o CMakeFiles/gui.dir/src/gui/Renderer.cpp.o -c /home/skyjin/Code/skychess/src/gui/Renderer.cpp",
+  "file": "/home/skyjin/Code/skychess/src/gui/Renderer.cpp",
+  "output": "CMakeFiles/gui.dir/src/gui/Renderer.cpp.o"
+},
+{
+  "directory": "/home/skyjin/Code/skychess/build",
+  "command": "/usr/bin/c++  -I/home/skyjin/Code/skychess/include -isystem /opt/sfml2/include -g -std=gnu++20 -o CMakeFiles/chess_gui.dir/src/main.cpp.o -c /home/skyjin/Code/skychess/src/main.cpp",
+  "file": "/home/skyjin/Code/skychess/src/main.cpp",
+  "output": "CMakeFiles/chess_gui.dir/src/main.cpp.o"
+}
+]
