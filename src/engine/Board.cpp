@@ -1,5 +1,7 @@
 #include "../../include/engine/Board.hpp"
 #include <stdexcept>
+#include <string>
+#include <vector>
 
 using namespace chess::engine;
 

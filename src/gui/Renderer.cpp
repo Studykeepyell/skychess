@@ -23,8 +23,6 @@ void Renderer::draw(sf::RenderWindow &win, const Board &board) {
       sf::RectangleShape &sq = isLight ? light_ : dark_;
 
       // place (0,0) at bottom-left like a real board
-      sq.setPosition(f * tile_, (7 - r) * tile_);
-      win.draw(sq);
     }
   }
 
