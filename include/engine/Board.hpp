@@ -15,12 +15,14 @@ public:
 
   const std::array<PieceType, 64> &pieces() const { return squares_; }
   Color sideToMove() const { return stm_; }
-
+  Color pieceColor(Square sq) const { return colours_[sq]; }
   std::vector<Move> legalMoves() const; // TODO  – empty for now
   bool makeMove(const Move &m);         // TODO  – always true for now
 
 private:
   std::array<PieceType, 64> squares_{};
+  std::array<Color, 64> colours_;
+
   Color stm_{Color::White};
 };
 

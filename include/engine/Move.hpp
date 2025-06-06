@@ -15,7 +15,7 @@ enum class PieceType : uint8_t {
   None
 };
 
-enum class Color : uint8_t { White, Black };
+enum class Color : uint8_t { White, Black, None };
 
 enum MoveFlag : uint8_t {
   Quiet = 0,
