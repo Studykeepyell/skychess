@@ -181,6 +181,7 @@ void MoveGenerator::genPawn(const Board &b, Square from,
       m.to = Square(to);
       out.push_back(m);
     }
+    // double push
 
     int startSquares = from + 2 * dir;
     if (r == startRank && pcs[startSquares] == PieceType::None) {
@@ -188,6 +189,45 @@ void MoveGenerator::genPawn(const Board &b, Square from,
       m2.from = from;
       m2.to = Square(to);
       out.push_back(m2);
+    }
+  }
+
+  // diagonal capture include enpassent
+  for (int capOff : (side == Color::White ? std::array<int, 2>{+7, +9}
+                                          : std::array<int, 2>{-7, -9})) {
+    int cto = from + capOff;
+    if (!onBoard(cto))
+      continue;
+    int fileDiff = std::abs((from & 7) - (cto & 7));
+    if (fileDiff != 1)
+      continue;
+
+    bool isCapture = (pcs[cto] != PieceType::None && b.pieceColor(cto) != side);
+
+    bool isEnpass = (cto == b.());
+
+    if (isCapture || isEnpass) {
+      if (r == promoRank) {
+        for (PieceType pt : {PieceType::Queen, PieceType::Rook,
+                             PieceType::Knight, PieceType::Bishop}) {
+          Move m;
+          m.from = from;
+          m.to = Square(cto);
+          m.promo = pt;
+          m.flags |= MoveFlag::Capture | MoveFlag::Promotion;
+          if (isEnpass)
+            m.flags |= MoveFlag::Enpassent;
+          out.push_back(m);
+        }
+      } else {
+        Move m;
+        m.from = from;
+        m.to = Square(cto);
+        m.flags |= MoveFlag::Capture;
+        if (isEnpass)
+          m.flags |= MoveFlag::Enpassent;
+        out.push_back(m);
+      }
     }
   }
 }
@@ -246,7 +286,7 @@ void MoveGenerator::genKing(const Board &b, Square from,
       continue;
 
     Move m;
-    m.from = from;
+    m.from = fro m;
     m.to = Square(to);
     if (pcs[to] != PieceType::None) {
       if (b.pieceColor(to) == b.pieceColor(from))
@@ -255,4 +295,27 @@ void MoveGenerator::genKing(const Board &b, Square from,
       out.push_back(m);
     }
   }
+}
+
+std::vector<Move> MoveGenerator::generateLegal(const Board &board) {
+  std::vector<Move> ply = generatePseudoLegal(board);
+  std::vector<Move> legal;
+  legal.reserve(ply.size());
+
+  Board copy = board; // cheap by-value (64 bytes)
+  for (const Move &m : ply) {
+    copy.makeMove(m);
+    if (!isSquareAttacked(copy, copy.kingSquare(board.sideToMove()),
+                          board.sideToMove() == Color::White ? Color::Black
+                                                             : Color::White))
+      legal.push_back(m);
+    copy = board; // revert
+  }
+  return legal;
+}
+
+bool MoveGenerator::isSquareAttacked(const Board &, Square, Color) {
+  /* TODO: call the various gen* functions for the opposite color,
+           or use bitboard tables once you switch representation.     */
+  return false;
 }
