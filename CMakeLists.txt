@@ -9,7 +9,9 @@ find_package(SFML REQUIRED COMPONENTS system window graphics)
 
 
 add_library(engine
-    src/engine/Board.cpp)
+    src/engine/Board.cpp
+    src/engine/Move.cpp
+    src/engine/MoveGenerator.cpp)
 
 target_include_directories(engine PUBLIC include)
 
@@ -49,6 +51,6 @@ test/MoveTests.cpp)
 
 target_link_libraries(chess_tests PRIVATE
 engine gui
-Catch2::Catch2)
+Catch2::Catch2WithMain)
 
 catch_discover_tests(chess_tests)
