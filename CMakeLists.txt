@@ -45,7 +45,7 @@ include(Catch)
 add_executable(chess_tests
 test/BoardTests.cpp
 test/GeneratorTests.cpp
-MoveTests.cpp)
+test/MoveTests.cpp)
 
 target_link_libraries(chess_tests PRIVATE
 engine gui
