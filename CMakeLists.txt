@@ -39,3 +39,17 @@ target_link_libraries(test_main PUBLIC Catch2::Catch2WithMain)
 
 
 include(Catch)
+
+#------------unit test executable---------------------#
+
+add_executable(chess_tests
+$<TARGET_OBJECTS::test_main>
+tests/BoardTests.cpp
+tests/GeneratorTests.cpp
+MoveTests.cpp)
+
+target_link_libraries(chess_tests PRIVATE
+engine gui
+Catch2::Catch2)
+
+catch_discover_tests(chess_tests)
