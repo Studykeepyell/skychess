@@ -35,7 +35,7 @@ FetchContent_MakeAvailable(Catch2)
 enable_testing()
 add_library(test_main OBJECT
 test/TestMain.cpp)
-target_link_libraries(test_main PUBLIC Catch2::Catch2::Catch3WithMain)
+target_link_libraries(test_main PUBLIC Catch2::Catch2WithMain)
 
 
 include(Catch)
