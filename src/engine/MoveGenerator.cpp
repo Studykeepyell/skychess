@@ -204,9 +204,9 @@ void MoveGenerator::genPawn(const Board &b, Square from,
 
     bool isCapture = (pcs[cto] != PieceType::None && b.pieceColor(cto) != side);
 
-    bool isEnpass = (cto == b.());
+    bool isEnPass = (cto == b.enPassantSquare()); // engine-specific
 
-    if (isCapture || isEnpass) {
+    if (isCapture || isEnPass) {
       if (r == promoRank) {
         for (PieceType pt : {PieceType::Queen, PieceType::Rook,
                              PieceType::Knight, PieceType::Bishop}) {
@@ -215,7 +215,7 @@ void MoveGenerator::genPawn(const Board &b, Square from,
           m.to = Square(cto);
           m.promo = pt;
           m.flags |= MoveFlag::Capture | MoveFlag::Promotion;
-          if (isEnpass)
+          if (isEnPass)
             m.flags |= MoveFlag::Enpassent;
           out.push_back(m);
         }
@@ -224,7 +224,7 @@ void MoveGenerator::genPawn(const Board &b, Square from,
         m.from = from;
         m.to = Square(cto);
         m.flags |= MoveFlag::Capture;
-        if (isEnpass)
+        if (isEnPass)
           m.flags |= MoveFlag::Enpassent;
         out.push_back(m);
       }
@@ -286,7 +286,7 @@ void MoveGenerator::genKing(const Board &b, Square from,
       continue;
 
     Move m;
-    m.from = fro m;
+    m.from = from;
     m.to = Square(to);
     if (pcs[to] != PieceType::None) {
       if (b.pieceColor(to) == b.pieceColor(from))
