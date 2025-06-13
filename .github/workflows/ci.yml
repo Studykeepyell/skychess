@@ -20,8 +20,9 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake build-essential
-      # 3) Configure CMake
+          sudo apt-get install -y cmake build-essential libsfml-dev
+
+           # 3) Configure CMake
       - name: Configure project
         working-directory: ./ # adjust if your CMakeLists is in a subfolder
         run: |
