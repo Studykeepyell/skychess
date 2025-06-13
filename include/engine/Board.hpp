@@ -19,6 +19,9 @@ public:
   std::vector<Move> legalMoves() const; // TODO  – empty for now
   bool makeMove(const Move &m);         // TODO  – always true for now
 
+  Square kingSquare(Color c) const { return kinSq_[static_cast<int>(c)]; }
+  Square enPassantSquare() const { return epSquare_; }
+
 private:
   std::array<PieceType, 64> squares_{};
   std::array<Color, 64> colours_;
