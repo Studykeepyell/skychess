@@ -13,11 +13,6 @@ public:
   Board(); // initial position
   explicit Board(const std::string &fen);
 
-  constexpr Square kingSquare(Color c) const noexcept {
-      return kingsq[static_cast<int>]} Square enPassantSquare() const {
-    return epSquare_;
-  }
-
   const std::array<PieceType, 64> &pieces() const { return squares_; }
   Color sideToMove() const { return stm_; }
   Color pieceColor(Square sq) const { return colours_[sq]; }
