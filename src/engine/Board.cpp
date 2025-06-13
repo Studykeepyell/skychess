@@ -24,7 +24,7 @@ void placeBackRank(std::array<PieceType, 64> &s, std::array<Color, 64> &c,
 } // namespace
 
 Board::Board() {
-  squares_.fill(PieceType::None);
+
   colours_.fill(Color::None);
 
   placeBackRank(squares_, colours_, 0, Color::White);
@@ -47,10 +47,26 @@ Board::Board(const std::string & /*fen*/) : Board() { /* TODO: parse FEN */ }
 std::vector<Move> Board::legalMoves() const { return {}; }
 
 bool Board::makeMove(const Move &m) {
+
+  epSquare_ = 64;
+
   squares_[m.to] = squares_[m.from];
   colours_[m.to] = colours_[m.from];
   squares_[m.from] = PieceType::None;
+
   colours_[m.from] = Color::None;
+
+  if (squares_[m.to] == PieceType::Pawn) {
+    int delta = int(m.to) - int(m.from);
+    if (delta == +16) {
+
+      epSquare_ = Square(m.from + 8);
+    } else if (delta == -16) {
+
+      epSquare_ = Square(m.from - 8);
+    }
+  }
+
   stm_ = (stm_ == Color::White) ? Color::Black : Color::White;
   return true;
 }

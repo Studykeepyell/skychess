@@ -14,7 +14,8 @@ public:
   explicit Board(const std::string &fen);
 
   constexpr Square kingSquare(Color c) const noexcept {
-    return kingsq[static_cast<int>]
+      return kingsq[static_cast<int>]} Square enPassantSquare() const {
+    return epSquare_;
   }
 
   const std::array<PieceType, 64> &pieces() const { return squares_; }
@@ -28,6 +29,7 @@ private:
   std::array<Color, 64> colours_;
   Square kinSq_[2] = {4, 60};
   Color stm_{Color::White};
+  Square epSquare_ = 64;
 };
 
 } // namespace chess::engine
