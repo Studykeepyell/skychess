@@ -43,8 +43,8 @@ include(Catch)
 #------------unit test executable---------------------#
 
 add_executable(chess_tests
-tests/BoardTests.cpp
-tests/GeneratorTests.cpp
+test/BoardTests.cpp
+test/GeneratorTests.cpp
 MoveTests.cpp)
 
 target_link_libraries(chess_tests PRIVATE
