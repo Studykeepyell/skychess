@@ -43,7 +43,6 @@ include(Catch)
 #------------unit test executable---------------------#
 
 add_executable(chess_tests
-$<TARGET_OBJECTS::test_main>
 tests/BoardTests.cpp
 tests/GeneratorTests.cpp
 MoveTests.cpp)
