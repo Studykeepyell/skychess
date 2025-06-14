@@ -22,7 +22,7 @@ static constexpr int SOUTH = -8;
 
 static bool onBoard(int sq) { return sq >= 0 && sq < 64; }
 static bool sameFile(int a, int b) { return (a & 7) == (b & 7); }
-static bool sameRank(int a, int b) { return (a << 3) == (b << 3); }
+static bool sameRank(int a, int b) { return (a >> 3) == (b >> 3); }
 std::vector<Move> MoveGenerator::generatePseudoLegal(const Board &board) {
 
   std::vector<Move> moves;

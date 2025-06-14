@@ -42,7 +42,6 @@ struct Move {
   /*uci helper (e2e4 ,  e7e8q)*/
   std::string toUci() const;
   static Move fromUci(const std::string &str);
-  int EnpassentBlock;
   /*simple equality so std::find works on std::vector<Move>*/
   bool operator==(const Move &) const = default;
 }; // namespace chess::engine

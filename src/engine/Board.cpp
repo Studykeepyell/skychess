@@ -9,8 +9,7 @@ namespace {
 
 void placeBackRank(std::array<PieceType, 64> &s, std::array<Color, 64> &c,
                    int rank, Color side) {
-  int r = (side == Color::White) ? rank : (7 - rank);
-  int base = r * 8;
+  int base = rank * 8;
 
   const std::array<PieceType, 8> order{
       PieceType::Rook, PieceType::Knight, PieceType::Bishop, PieceType::Queen,
@@ -26,7 +25,7 @@ void placeBackRank(std::array<PieceType, 64> &s, std::array<Color, 64> &c,
 Board::Board() {
 
   colours_.fill(Color::None);
-
+  squares_.fill(PieceType::None);
   placeBackRank(squares_, colours_, 0, Color::White);
 
   placeBackRank(squares_, colours_, 7, Color::Black);
@@ -38,7 +37,7 @@ Board::Board() {
   }
   for (int i = 0; i < 8; ++i) {
     squares_[6 * 8 + i] = PieceType::Pawn;
-    colours_[8 + i] = Color::Black;
+    colours_[6 * 8 + i] = Color::Black;
   }
 }
 
