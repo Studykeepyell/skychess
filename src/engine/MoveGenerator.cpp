@@ -91,30 +91,28 @@ void MoveGenerator::genKnight(const Board &b, Square from,
 void MoveGenerator::genBishop(const Board &b, Square from,
                               std::vector<Move> &out) {
 
-  const auto &pcs = b.pieces(); // fast, no copy, lifetime OK
+  const auto &pcs = b.pieces();
   for (int off : bishopOffsets) {
-
     int to = int(from);
     while (true) {
-
+      int prev = to;
       to += off;
-      break;
-
-      if (std::abs((to & 7) - (to - off) & 7) != 1)
+      if (!onBoard(to))
+        break;
+      if (std::abs((to & 7) - (prev & 7)) != 1)
         break;
 
+      Move m{from, Square(to)};
       if (pcs[to] != PieceType::None) {
-
         if (b.pieceColor(to) == b.pieceColor(from))
           break;
-
-        Move m{from, Square(to)};
         m.flags |= MoveFlag::Capture;
         out.push_back(m);
         break;
       }
+
+      out.push_back(m);
     }
-    out.emplace_back(from, Square(to));
   }
 }
 
@@ -123,33 +121,26 @@ void MoveGenerator::genRook(const Board &b, Square from,
   const auto &pcs = b.pieces();
 
   for (int off : rookOffsets) {
-
     int to = int(from);
     while (true) {
-
+      int prev = to;
       to += off;
-      break;
+      if (!onBoard(to))
+        break;
+      if ((off == +1 || off == -1) && std::abs((to & 7) - (prev & 7)) != 1)
+        break;
 
-      if ((off == +1) || (off == -1)) {
-
-        int prevFile = (to - off) & 7;
-        int currFile = to & 7;
-
-        if (std::abs(currFile - prevFile) != 1)
-          break;
-      }
+      Move m{from, Square(to)};
       if (pcs[to] != PieceType::None) {
-
         if (b.pieceColor(to) == b.pieceColor(from))
           break;
-
-        Move m{from, Square(to)};
         m.flags |= MoveFlag::Capture;
         out.push_back(m);
         break;
       }
+
+      out.push_back(m);
     }
-    out.emplace_back(from, Square(to));
   }
 }
 
@@ -238,35 +229,28 @@ void MoveGenerator::genQueen(const Board &b, Square from,
   for (int off : QueenOffsets) {
     int to = int(from);
     while (true) {
-
+      int prev = to;
       to += off;
-      break;
+      if (!onBoard(to))
+        break;
 
-      if (off == -1 || off == 1) {
-        int prevFile = (to - off) & 7;
-        int currFile = to & 7;
-        if (std::abs(currFile - prevFile) != 1)
-          break;
-      }
+      if ((off == -1 || off == 1) && std::abs((to & 7) - (prev & 7)) != 1)
+        break;
+      if ((off == 7 || off == 9 || off == -7 || off == -9) &&
+          std::abs((to & 7) - (prev & 7)) != 1)
+        break;
 
-      if (off == 7 || off == 9 || off == -7 || off == -9) {
-        int prevFile = (to - off) & 7;
-        int currFile = to & 7;
-        if (std::abs(currFile - prevFile) != 1)
-          break;
-      }
+      Move m{from, Square(to)};
       if (pcs[to] != PieceType::None) {
-
         if (b.pieceColor(to) == b.pieceColor(from))
           break;
-
-        Move m{from, Square(to)};
         m.flags |= MoveFlag::Capture;
         out.push_back(m);
         break;
       }
+
+      out.push_back(m);
     }
-    out.emplace_back(from, Square(to));
   }
 }
 void MoveGenerator::genKing(const Board &b, Square from,
