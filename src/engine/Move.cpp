@@ -8,7 +8,7 @@ using namespace chess::engine;
 static char fileToChar(int f) { return char('a' + f); }
 static char rankToChar(int r) { return char('1' + r); }
 static Square strToSquare(const std::string &s) {
-  return Square((s[0] - 'a') + 8 * (s[2] - '1'));
+  return Square((s[0] - 'a') + 8 * (s[1] - '1'));
 }
 
 /*public helpers*/
