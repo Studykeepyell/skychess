@@ -36,8 +36,8 @@ std::vector<Move> MoveGenerator::generatePseudoLegal(const Board &board) {
     if (pt == PieceType::None)
       continue;
 
-    // TODO: color filtering when you store that
-
+    if (board.pieceColor(sq) != stm)
+      continue;
     switch (pt) {
     case PieceType::Pawn:
       genPawn(board, sq, moves);
@@ -79,12 +79,12 @@ void MoveGenerator::genKnight(const Board &b, Square from,
     m.to = Square(to);
     if (pcs[to] != PieceType::None) {
       if (b.pieceColor(to) == b.pieceColor(from))
-        break;
+        continue;
 
       m.flags |= MoveFlag ::Capture;
-      out.push_back(m);
-      break;
+      continue;
     }
+    out.push_back(m);
   }
 }
 
@@ -178,7 +178,7 @@ void MoveGenerator::genPawn(const Board &b, Square from,
     if (r == startRank && pcs[startSquares] == PieceType::None) {
       Move m2;
       m2.from = from;
-      m2.to = Square(to);
+      m2.to = Square(startSquares);
       out.push_back(m2);
     }
   }
