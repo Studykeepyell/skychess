@@ -293,7 +293,9 @@ std::vector<Move> MoveGenerator::generateLegal(const Board &board) {
                           board.sideToMove() == Color::White ? Color::Black
                                                              : Color::White))
       legal.push_back(m);
-    copy = board; // revert
+    copy = board;
+
+    // revert
   }
   return legal;
 }
