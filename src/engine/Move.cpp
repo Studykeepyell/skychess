@@ -14,13 +14,30 @@ static Square strToSquare(const std::string &s) {
 /*public helpers*/
 
 std::string Move::toUci() const {
-  std::string s = "0000";
-  s[0] = fileToChar(from & 7);
-  s[1] = rankToChar(from >> 3);
-  s[2] = fileToChar(to & 7);
-  s[3] = rankToChar(to >> 3);
-  if (promo != PieceType::None)
-    s += "nrqk"[static_cast<int>(promo)];
+  std::string s;
+  s += fileToChar(from & 7);
+  s += rankToChar(from >> 3);
+  s += fileToChar(to & 7);
+  s += rankToChar(to >> 3);
+
+  if (promo != PieceType::None) {
+    switch (promo) {
+    case PieceType::Knight:
+      s += 'n';
+      break;
+    case PieceType::Bishop:
+      s += 'b';
+      break;
+    case PieceType::Rook:
+      s += 'r';
+      break;
+    case PieceType::Queen:
+      s += 'q';
+      break;
+    default:
+      assert(false && "Invalid promotion piece");
+    }
+  }
   return s;
 }
 
