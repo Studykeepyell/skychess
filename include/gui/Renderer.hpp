@@ -13,6 +13,7 @@ private:
   float tile_;
   sf::RectangleShape light_, dark_;
   sf::Font font_;
+  std::map<std::string, sf::Texture> pieceTextures_;
 };
 
 } // namespace chess::gui

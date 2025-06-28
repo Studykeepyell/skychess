@@ -27,7 +27,6 @@ Board::Board() {
   colours_.fill(Color::None);
   squares_.fill(PieceType::None);
   placeBackRank(squares_, colours_, 0, Color::White);
-
   placeBackRank(squares_, colours_, 7, Color::Black);
 
   // pawns

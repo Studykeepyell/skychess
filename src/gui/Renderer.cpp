@@ -1,5 +1,6 @@
 #include "../../include/gui/Renderer.hpp"
 #include <array>
+#include <stdexcept>
 
 using namespace chess::gui;
 using namespace chess::engine;
@@ -11,8 +12,17 @@ Renderer::Renderer(float tileSize) : tile_(tileSize) {
   light_.setFillColor(sf::Color(240, 217, 181)); // light squares
   dark_.setFillColor(sf::Color(181, 136, 99));   // dark squares
 
-  if (!font_.loadFromFile("assets/fonts/DejaVuSansCondensed.ttf"))
-    throw std::runtime_error("Cannot load font");
+  std::vector<std::string> pieceKeys = {"WP", "WB", "WN", "WR", "WQ", "WK",
+                                        "BP", "BB", "BN", "BR", "BQ", "BK"};
+
+  for (const auto &key : pieceKeys) {
+    sf::Texture texture;
+    if (!texture.loadFromFile("assets/pieces/chess_pieces/" + key + ".png"))
+      throw std::runtime_error("can not load the texture" + key);
+    pieceTextures_[key] = texture;
+  }
+  // if (!font_.loadFromFile("assets/fonts/DejaVuSansCondensed.ttf"))
+  //   throw std::runtime_error("Cannot load font");
 }
 
 void Renderer::draw(sf::RenderWindow &win, const Board &board) {
@@ -28,26 +38,44 @@ void Renderer::draw(sf::RenderWindow &win, const Board &board) {
     }
   }
 
-  /* ---------- 2. draw piece letters (temp gfx) ---------- */
-  for (int idx = 0; idx < 64; ++idx) {
-    PieceType p = board.pieces()[idx];
+  for (int i = 0; i < 64; i++) {
+    PieceType p = board.pieces()[i];
+    Color c = board.pieceColor(static_cast<Square>(i));
+
     if (p == PieceType::None)
       continue;
 
-    int f = idx & 7;  // file 0-7
-    int r = idx >> 3; // rank 0-7
+    int f = i % 8;
+    int r = i / 8;
+    std::string key = (c == Color ::White ? "W" : "B");
+    switch (p) {
+    case PieceType::Bishop:
+      key += "B";
+      break;
+    case PieceType::Knight:
+      key += "N";
+      break;
+    case PieceType::King:
+      key += "K";
+      break;
+    case PieceType::Queen:
+      key += "Q";
+      break;
+    case PieceType::Rook:
+      key += "R";
+      break;
+    case PieceType::Pawn:
+      key += "P";
+      break;
+    default:
+      continue;
+    }
+    sf::Sprite sprite;
+    sprite.setTexture(pieceTextures_.at(key));
 
-    sf::Text t;
-    t.setFont(font_);
-    t.setCharacterSize(static_cast<unsigned>(tile_ * 0.75f));
-    t.setFillColor(sf::Color::Black);
-
-    static const std::array<char, 7> glyph = {'K', 'Q', 'R', 'B',
-                                              'N', 'P', '?'};
-    t.setString(glyph[static_cast<int>(p)]);
-
-    t.setPosition(f * tile_ + tile_ * 0.15f, (7 - r) * tile_ - tile_ * 0.05f);
-
-    win.draw(t);
+    sprite.setScale(tile_ / sprite.getTexture()->getSize().x,
+                    tile_ / sprite.getTexture()->getSize().y);
+    sprite.setPosition(f * tile_, (7 - r) * tile_);
+    win.draw(sprite);
   }
 }
