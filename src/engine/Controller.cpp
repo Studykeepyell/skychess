@@ -1,5 +1,5 @@
 #include "../../include/engine/Controller.hpp"
-
+#include <string>
 using namespace chess::engine;
 
 Controller::Controller()
@@ -19,7 +19,6 @@ void Controller::run() {
         handleClick(event.mouseButton.x, event.mouseButton.y);
       }
     }
-
     window_.clear();
     render_.draw(window_, board_, legalMoves_, selected_);
     window_.display();
