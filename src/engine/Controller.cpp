@@ -8,19 +8,29 @@ Controller::Controller()
 
 void Controller::run() {
   while (window_.isOpen()) {
-    // SFML 3.x: pollEvent() returns std::optional<sf::Event>
+    // In SFML 3, pollEvent returns a std::optional<sf::Event>
     while (auto optEvent = window_.pollEvent()) {
-      auto &event = *optEvent; // unwrap the optional
+      const sf::Event &event = *optEvent; // unwrap the optional
 
-      if (event.type == sf::Event::Closed) {
+      if (event.is<sf::Event::Closed>()) {
         window_.close();
-      } else if (event.type == sf::Event::MouseButtonPressed &&
-                 event.mouseButton.button == sf::Mouse::Button::Left) {
-        handleClick(event.mouseButton.x, event.mouseButton.y);
+      } else if (const auto *mouse = event.getIf<sf::Event::MouseButtonPressed>()) {
+        if (mouse->button == sf::Mouse::Button::Left)
+          handleClick(mouse->position.x, mouse->position.y);
       }
     }
     window_.clear();
     render_.draw(window_, board_, legalMoves_, selected_);
     window_.display();
   }
+}
+
+void Controller::handleClick(int x, int y) {
+  int file = x / static_cast<int>(tileSize);
+  int rank = 7 - y / static_cast<int>(tileSize);
+  if (file < 0 || file >= 8 || rank < 0 || rank >= 8)
+    return;
+
+  selected_ = Square(rank * 8 + file);
+  legalMoves_ = board_.legalMoves();
 }
