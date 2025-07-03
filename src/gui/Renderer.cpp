@@ -21,11 +21,15 @@ Renderer::Renderer(float tileSize) : tile_(tileSize) {
       throw std::runtime_error("can not load the texture" + key);
     pieceTextures_[key] = texture;
   }
-  // if (!font_.loadFromFile("assets/fonts/DejaVuSansCondensed.ttf"))
-  //   throw std::runtime_error("Cannot load font");
+  if (!font_.loadFromFile("assets/fonts/DejaVuSansCondensed.ttf"))
+    throw std::runtime_error("Cannot load font");
+  highlightSquare_.setSize({tile_, tile_});
+  highlightSquare_.setFillColor({sf::Color(0, 255, 0, 100)});
 }
 
-void Renderer::draw(sf::RenderWindow &win, const Board &board) {
+void Renderer::draw(sf::RenderWindow &win, const Board &board,
+                    const std::vector<chess::engine::Move> &highlightedMoves,
+                    std::optional<chess::engine::Square> selected) {
   /* ---------- 1. draw the checkerboard ---------- */
   for (int r = 0; r < 8; ++r) {
     for (int f = 0; f < 8; ++f) {
@@ -36,6 +40,14 @@ void Renderer::draw(sf::RenderWindow &win, const Board &board) {
       sq.setPosition(f * tile_, (7 - r) * tile_);
       win.draw(sq);
     }
+  }
+
+  // highlight legal moves
+  for (const auto &moves : highlightedMoves) {
+    int f = moves.to % 8;
+    int r = moves.to / 8;
+    highlightSquare_.setPosition(f * tile_, (7 - r) * tile_);
+    win.draw(highlightSquare_);
   }
 
   for (int i = 0; i < 64; i++) {
