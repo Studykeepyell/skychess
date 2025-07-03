@@ -1,5 +1,4 @@
 #include "../../include/engine/Controller.hpp"
-#include <SFML/Graphics.hpp> // ← make sure this is here
 
 using namespace chess::engine;
 
