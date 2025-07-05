@@ -1,4 +1,5 @@
 #include "../../include/engine/Controller.hpp"
+
 #include <string>
 using namespace chess::engine;
 
@@ -14,13 +15,15 @@ void Controller::run() {
 
       if (event.is<sf::Event::Closed>()) {
         window_.close();
-      } else if (const auto *mouse = event.getIf<sf::Event::MouseButtonPressed>()) {
+      } else if (const auto *mouse =
+                     event.getIf<sf::Event::MouseButtonPressed>()) {
         if (mouse->button == sf::Mouse::Button::Left)
           handleClick(mouse->position.x, mouse->position.y);
       }
     }
     window_.clear();
     render_.draw(window_, board_, legalMoves_, selected_);
+
     window_.display();
   }
 }
