@@ -1,48 +1,59 @@
-#include "../../include/engine/Board.hpp"
+// in src/engine/Board.cpp
+#include "engine/Board.hpp"
+#include "engine/MoveGenerator.hpp" // now this is the correct path
+#include <array>                    // for your helpers
 #include <stdexcept>
-#include <string>
-#include <vector>
 
 using namespace chess::engine;
 
-namespace {
-
-void placeBackRank(std::array<PieceType, 64> &s, std::array<Color, 64> &c,
-                   int rank, Color side) {
-  int base = rank * 8;
-
-  const std::array<PieceType, 8> order{
+// helper to put R–N–B–Q–K–B–N–R on one rank:
+static void placeBackRank(std::array<PieceType, 64> &sq,
+                          std::array<Color, 64> &col, int rank, Color side) {
+  constexpr std::array<PieceType, 8> order{
       PieceType::Rook, PieceType::Knight, PieceType::Bishop, PieceType::Queen,
       PieceType::King, PieceType::Bishop, PieceType::Knight, PieceType::Rook};
-
+  int base = rank * 8;
   for (int file = 0; file < 8; ++file) {
-    s[base + file] = order[file];
-    c[base + file] = side;
+    sq[base + file] = order[file];
+    col[base + file] = side;
   }
 }
-} // namespace
 
-Board::Board() {
+// helper to put eight pawns on one rank:
+static void placePawnRank(std::array<PieceType, 64> &sq,
+                          std::array<Color, 64> &col, int rank, Color side) {
+  int base = rank * 8;
+  for (int i = 0; i < 8; ++i) {
+    sq[base + i] = PieceType::Pawn;
+    col[base + i] = side;
+  }
+}
 
-  colours_.fill(Color::None);
+Board::Board() : epSquare_(64), stm_(Color::White) { setStartPosition(); }
+
+Board::Board(const std::string & /*fen*/)
+    : Board() // default to standard setup; you can parse FEN here later
+{}
+
+void Board::setStartPosition() {
+  // clear out any old data
   squares_.fill(PieceType::None);
-  placeBackRank(squares_, colours_, 0, Color::White);
-  placeBackRank(squares_, colours_, 7, Color::Black);
+  colours_.fill(Color::None);
+  epSquare_ = Square(64);
+  stm_ = Color::White;
 
-  // pawns
-  for (int i = 0; i < 8; ++i) {
-    squares_[8 + i] = PieceType::Pawn;
-    colours_[8 + i] = Color::White;
-  }
-  for (int i = 0; i < 8; ++i) {
-    squares_[6 * 8 + i] = PieceType::Pawn;
-    colours_[6 * 8 + i] = Color::Black;
-  }
+  // white back rank & pawns
+  placeBackRank(squares_, colours_, 0, Color::White);
+  placePawnRank(squares_, colours_, 1, Color::White);
+
+  // black pawns & back rank
+  placePawnRank(squares_, colours_, 6, Color::Black);
+  placeBackRank(squares_, colours_, 7, Color::Black);
 }
 
-Board::Board(const std::string & /*fen*/) : Board() { /* TODO: parse FEN */ }
-
-std::vector<Move> Board::legalMoves() const { return {}; }
+std::vector<Move> Board::legalMoves() const {
+  return MoveGenerator::generateLegal(*this);
+}
 
 bool Board::makeMove(const Move &m) {
 

@@ -5,8 +5,7 @@ project(chess_gui LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-find_package(SFML REQUIRED COMPONENTS system window graphics)
-
+find_package(SFML 3 REQUIRED COMPONENTS Window Graphics)
 
 add_library(engine
     src/engine/Board.cpp
@@ -16,13 +15,23 @@ add_library(engine
 target_include_directories(engine PUBLIC include)
 
 add_library(gui
-    src/gui/Renderer.cpp)
+    src/gui/Renderer.cpp
+src/engine/Controller.cpp)
+
 
 target_include_directories(gui PUBLIC include)
-target_link_libraries(gui PUBLIC engine sfml-graphics sfml-window sfml-system)
+target_link_libraries(gui PUBLIC
+  engine
+  SFML::Window
+  SFML::Graphics
+)
 
 add_executable(chess_gui src/main.cpp)
-target_link_libraries(chess_gui PRIVATE gui)
+target_link_libraries(chess_gui PUBLIC gui)
+target_include_directories(chess_gui
+  PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
+)
 
 # ----------------------------- Catch2 --------------------------------
 

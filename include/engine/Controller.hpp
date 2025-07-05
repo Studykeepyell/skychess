@@ -2,6 +2,9 @@
 #include "../engine/Board.hpp"
 #include "../gui/Renderer.hpp"
 #include <SFML/Graphics.hpp> // brings in sf::Window, sf::RenderWindow, sf::Event, pollEvent(), etc.
+//
+
+namespace chess::engine {
 class Controller {
 
 public:
@@ -21,3 +24,4 @@ private:
 
   void handleClick(int x, int y);
 };
+} // namespace chess::engine
