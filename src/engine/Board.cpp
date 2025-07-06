@@ -51,6 +51,10 @@ void Board::setStartPosition() {
   placeBackRank(squares_, colours_, 7, Color::Black);
 
   castleRights_ = 0b1111;
+
+  // record king starting squares for fast access
+  kinSq_[static_cast<int>(Color::White)] = Square(4);
+  kinSq_[static_cast<int>(Color::Black)] = Square(60);
 }
 
 std::vector<Move> Board::legalMoves() const {

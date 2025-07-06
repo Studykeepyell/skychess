@@ -64,30 +64,41 @@ std::vector<Move> MoveGenerator::generatePseudoLegal(const Board &board) {
 
 void MoveGenerator::genKnight(const Board &b, Square from,
                               std::vector<Move> &out) {
+  const auto &pcs = b.pieces();
+  Color me = b.pieceColor(from);
 
-  const auto &pcs = b.pieces(); // fast, no copy, lifetime OK
   for (int off : knightOffsets) {
     int to = int(from) + off;
+
+    // 1) board‐bounds check
     if (!onBoard(to))
       continue;
-    int fileDiff = std::abs((from & 7) - (to & 7));
+
+    // 2) file‐wrap check (knight jumps two files max)
+    int fileDiff = std::abs((int(from) & 7) - (to & 7));
     if (fileDiff > 2)
       continue;
 
+    // 3) build the move
     Move m;
     m.from = from;
     m.to = Square(to);
-    if (pcs[to] != PieceType::None) {
-      if (b.pieceColor(to) == b.pieceColor(from))
+    m.flags = 0; // clear flags
+
+    // 4) destination empty → quiet move
+    if (pcs[to] == PieceType::None) {
+      out.push_back(m);
+    } else {
+      // 5) occupied by friend → skip
+      if (b.pieceColor(to) == me)
         continue;
 
-      m.flags |= MoveFlag ::Capture;
-      continue;
+      // 6) occupied by enemy → capture
+      m.flags |= MoveFlag::Capture;
+      out.push_back(m);
     }
-    out.push_back(m);
   }
 }
-
 void MoveGenerator::genBishop(const Board &b, Square from,
                               std::vector<Move> &out) {
 
