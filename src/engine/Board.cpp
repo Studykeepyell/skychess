@@ -49,15 +49,71 @@ void Board::setStartPosition() {
   // black pawns & back rank
   placePawnRank(squares_, colours_, 6, Color::Black);
   placeBackRank(squares_, colours_, 7, Color::Black);
+
+  castleRights_ = 0b1111;
 }
 
 std::vector<Move> Board::legalMoves() const {
   return MoveGenerator::generateLegal(*this);
 }
 
+void Board::revokeKingRights(Color side) {
+  if (side == Color::White)
+    castleRights_ &= ~(0b0011);
+  else
+    castleRights_ &= ~(0b1100);
+}
+
+void Board::revokeRookRights(Color side, bool kingside) {
+  int bit = (side == Color::White) ? (kingside ? 0 : 1) : (kingside ? 2 : 3);
+  castleRights_ &= ~(1 << bit);
+}
+
+void Board::revokeRightsOnRookCapture(Square to) {
+  switch (to) {
+  case Square(0):
+    revokeRookRights(Color::White, false);
+    break;
+  case Square(7):
+    revokeRookRights(Color::White, true);
+    break;
+
+  case Square(56):
+    revokeRookRights(Color::Black, false);
+    break;
+
+  case Square(63):
+    revokeRookRights(Color::Black, true);
+    break;
+  default:
+    break;
+  }
+}
+
+void Board::updateCastleRights(const Move &m) {
+  Color Mover = pieceColor(m.from);
+
+  if (squares_[m.from] == PieceType::King) {
+    revokeKingRights(Mover);
+    kinSq_[static_cast<int>(Mover)] = m.to;
+  }
+
+  if (squares_[m.from] == PieceType::Rook) {
+    bool isKS = (m.from == Square(7) && Mover == Color::White) ||
+                (m.from == Square(63)) && Mover == Color::Black;
+
+    revokeRookRights(Mover, isKS);
+  }
+
+  if (squares_[m.to] == PieceType::Rook) {
+    revokeRightsOnRookCapture(m.to);
+  }
+}
+
 bool Board::makeMove(const Move &m) {
 
   epSquare_ = 64;
+  updateCastleRights(m);
 
   squares_[m.to] = squares_[m.from];
   colours_[m.to] = colours_[m.from];

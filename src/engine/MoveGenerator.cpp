@@ -255,16 +255,19 @@ void MoveGenerator::genQueen(const Board &b, Square from,
 }
 void MoveGenerator::genKing(const Board &b, Square from,
                             std::vector<Move> &out) {
+
   const auto &pcs = b.pieces();
+  Color side = b.pieceColor(from);
   for (int off : KingOffsets) {
     int to = int(from) + off;
-    int prevFile = (to - off) & 7;
+
+    // file‐wrap check for horizontal/diagonal offsets
+    int prevFile = (int(from)) & 7;
     int currFile = to & 7;
-    if ((off == +1) || (off == -1) || (off == 9) || (off == 7) || (off == -9) ||
-        (off == -7)) {
-      if (std::abs(currFile - prevFile) != 1)
-        continue;
-    }
+    if ((off == +1 || off == -1 || off == +9 || off == -9 || off == +7 ||
+         off == -7) &&
+        std::abs(currFile - prevFile) != 1)
+      continue;
 
     if (!onBoard(to))
       continue;
@@ -272,36 +275,113 @@ void MoveGenerator::genKing(const Board &b, Square from,
     Move m;
     m.from = from;
     m.to = Square(to);
-    if (pcs[to] != PieceType::None) {
-      if (b.pieceColor(to) == b.pieceColor(from))
-        continue;
+    m.flags = 0; // ensure flags start at zero
+
+    // **1) quiet move to an empty square**
+    if (pcs[to] == PieceType::None) {
+      out.push_back(m);
+      continue;
+    }
+
+    // **2) capture an enemy piece**
+    if (b.pieceColor(to) != b.pieceColor(from)) {
       m.flags |= MoveFlag::Capture;
       out.push_back(m);
+    }
+  }
+
+  const uint8_t rights = b.castlingRights();
+
+  if (side == Color::White) {
+    // White kingside logic
+    if (rights & (1 << 0)) {
+      if (pcs[5] == PieceType::None && pcs[6] == PieceType::None) {
+        if (!isSquareAttacked(b, Square(4), Color::Black) &&
+            !isSquareAttacked(b, Square(5), Color::Black) &&
+            !isSquareAttacked(b, Square(6), Color::Black)) {
+          Move m;
+          m.to = Square(6);
+          m.from = Square(4);
+          m.flags = MoveFlag::KingSideCastle;
+          out.push_back(m);
+        }
+      }
+    }
+    // White queenside
+    if (rights & (1 << 1)) {
+      if (pcs[1] == PieceType::None && pcs[2] == PieceType::None &&
+          pcs[3] == PieceType::None) {
+        if (!isSquareAttacked(b, Square(4), Color::Black) &&
+            !isSquareAttacked(b, Square(3), Color::Black) &&
+            !isSquareAttacked(b, Square(2), Color::Black)) {
+          Move m;
+          m.from = Square(4);
+          m.to = Square(2);
+          m.flags = MoveFlag::QueenSideCastle;
+          out.push_back(m);
+        }
+      }
+    }
+  }
+  if (side == Color::Black) {
+    // Black kingside logic
+    if (rights & (1 << 0)) {
+      if (pcs[62] == PieceType::None && pcs[61] == PieceType::None) {
+        if (!isSquareAttacked(b, Square(62), Color::White) &&
+            !isSquareAttacked(b, Square(61), Color::White) &&
+            !isSquareAttacked(b, Square(60), Color::White)) {
+          Move m;
+          m.to = Square(62);
+          m.from = Square(60);
+          m.flags = MoveFlag::KingSideCastle;
+          out.push_back(m);
+        }
+      }
+    }
+    // Black queenside
+    if (rights & (1 << 1)) {
+      if (pcs[57] == PieceType::None && pcs[58] == PieceType::None &&
+          pcs[59] == PieceType::None) {
+        if (!isSquareAttacked(b, Square(58), Color::White) &&
+            !isSquareAttacked(b, Square(60), Color::White) &&
+            !isSquareAttacked(b, Square(59), Color::White)) {
+          Move m;
+          m.from = Square(4);
+          m.to = Square(2);
+          m.flags = MoveFlag::QueenSideCastle;
+          out.push_back(m);
+        }
+      }
     }
   }
 }
 
 std::vector<Move> MoveGenerator::generateLegal(const Board &board) {
-  std::vector<Move> ply = generatePseudoLegal(board);
+  Color us = board.sideToMove();
+  Color them = (us == Color::White ? Color::Black : Color::White);
+
+  auto ply = generatePseudoLegal(board);
   std::vector<Move> legal;
   legal.reserve(ply.size());
 
-  Board copy = board; // cheap by-value (64 bytes)
-  for (const Move &m : ply) {
-    copy.makeMove(m);
-    if (!isSquareAttacked(copy, copy.kingSquare(board.sideToMove()),
-                          board.sideToMove() == Color::White ? Color::Black
-                                                             : Color::White))
-      legal.push_back(m);
-    copy = board;
+  for (auto const &m : ply) {
+    Board copy = board;
+    copy.makeMove(m); // copy.sideToMove() now == them
 
-    // revert
+    Square kingSq = copy.kingSquare(us);
+    // test if *them* attack our king
+    if (!isSquareAttacked(copy, kingSq, them))
+      legal.push_back(m);
   }
   return legal;
 }
 
-bool MoveGenerator::isSquareAttacked(const Board &, Square, Color) {
-  /* TODO: call the various gen* functions for the opposite color,
-           or use bitboard tables once you switch representation.     */
+bool MoveGenerator::isSquareAttacked(const Board &b, Square sq, Color) {
+  auto attacks = generatePseudoLegal(b);
+
+  for (auto const &m : attacks) {
+    if (m.to == sq)
+      return true;
+  }
   return false;
 }
