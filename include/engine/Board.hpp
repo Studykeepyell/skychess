@@ -39,6 +39,7 @@ private:
 
   // Top-level dispatcher that calls the above three as needed:
   void updateCastleRights(const Move &m);
+  void applyCastleRookMove(const Move &m);
 };
 
 } // namespace chess::engine

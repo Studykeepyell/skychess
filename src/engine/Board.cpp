@@ -2,8 +2,7 @@
 #include "engine/Board.hpp"
 #include "engine/MoveGenerator.hpp" // now this is the correct path
 #include <array>                    // for your helpers
-#include <stdexcept>
-
+#include <cassert>
 using namespace chess::engine;
 
 // helper to put R–N–B–Q–K–B–N–R on one rank:
@@ -104,7 +103,7 @@ void Board::updateCastleRights(const Move &m) {
 
   if (squares_[m.from] == PieceType::Rook) {
     bool isKS = (m.from == Square(7) && Mover == Color::White) ||
-                (m.from == Square(63)) && Mover == Color::Black;
+                (m.from == Square(63) && Mover == Color::Black);
 
     revokeRookRights(Mover, isKS);
   }
@@ -114,10 +113,56 @@ void Board::updateCastleRights(const Move &m) {
   }
 }
 
-bool Board::makeMove(const Move &m) {
+void Board::applyCastleRookMove(const Move &m) {
+  // White O-O: king e1→g1, rook h1→f1
+  if (m.from == Square(4) && m.to == Square(6)) {
+    squares_[5] = squares_[7];
+    colours_[5] = colours_[7];
+    squares_[7] = PieceType::None;
+    colours_[7] = Color::None;
+  }
+  // White O-O-O: king e1→c1, rook a1→d1
+  else if (m.from == Square(4) && m.to == Square(2)) {
+    squares_[3] = squares_[0];
+    colours_[3] = colours_[0];
+    squares_[0] = PieceType::None;
+    colours_[0] = Color::None;
+  }
+  // Black O-O: king e8→g8, rook h8→f8
+  else if (m.from == Square(60) && m.to == Square(62)) {
+    squares_[61] = squares_[63];
+    colours_[61] = colours_[63];
+    squares_[63] = PieceType::None;
+    colours_[63] = Color::None;
+  }
+  // Black O-O-O: king e8→c8, rook a8→d8
+  else if (m.from == Square(60) && m.to == Square(58)) {
+    squares_[59] = squares_[56];
+    colours_[59] = colours_[56];
+    squares_[56] = PieceType::None;
+    colours_[56] = Color::None;
+  }
+}
 
-  epSquare_ = 64;
+bool Board::makeMove(const Move &m) {
+  int from = int(m.from);
+  int to = int(m.to);
+  assert(from >= 0 && from < 64);
+  assert(to >= 0 && to < 64);
+  epSquare_ = Square(64);
+
   updateCastleRights(m);
+  if (m.flags & MoveFlag::KingSideCastle)
+    applyCastleRookMove(m);
+  if (m.flags & MoveFlag::QueenSideCastle)
+    applyCastleRookMove(m);
+
+  if (m.flags & MoveFlag::Enpassent) {
+    bool isWhite = (stm_ == Color::White);
+    int capIdx = int(m.to) + (isWhite ? -8 : +8);
+    squares_[capIdx] = PieceType::None;
+    colours_[capIdx] = Color::None;
+  }
 
   squares_[m.to] = squares_[m.from];
   colours_[m.to] = colours_[m.from];

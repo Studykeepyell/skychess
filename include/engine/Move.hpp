@@ -35,7 +35,9 @@ struct Move {
   constexpr bool isCapture() const { return flags & MoveFlag::Capture; }
   constexpr bool isEnpassent() const { return flags & MoveFlag::Enpassent; }
   constexpr bool isCastle() const {
-    return flags & MoveFlag::KingSideCastle | QueenSideCastle;
+    // mask‐off both bits, then test if *any* of them is set
+    return (flags & (MoveFlag::KingSideCastle | MoveFlag::QueenSideCastle)) !=
+           0;
   }
   constexpr bool isPromotion() const { return flags & MoveFlag::Promotion; }
 

@@ -336,7 +336,7 @@ void MoveGenerator::genKing(const Board &b, Square from,
   }
   if (side == Color::Black) {
     // Black kingside logic
-    if (rights & (1 << 0)) {
+    if (rights & (1 << 2)) {
       if (pcs[62] == PieceType::None && pcs[61] == PieceType::None) {
         if (!isSquareAttacked(b, Square(62), Color::White) &&
             !isSquareAttacked(b, Square(61), Color::White) &&
@@ -350,7 +350,7 @@ void MoveGenerator::genKing(const Board &b, Square from,
       }
     }
     // Black queenside
-    if (rights & (1 << 1)) {
+    if (rights & (1 << 3)) {
       if (pcs[57] == PieceType::None && pcs[58] == PieceType::None &&
           pcs[59] == PieceType::None) {
         if (!isSquareAttacked(b, Square(58), Color::White) &&
@@ -387,12 +387,75 @@ std::vector<Move> MoveGenerator::generateLegal(const Board &board) {
   return legal;
 }
 
-bool MoveGenerator::isSquareAttacked(const Board &b, Square sq, Color) {
-  auto attacks = generatePseudoLegal(b);
+bool MoveGenerator::isSquareAttacked(const Board &b, Square sq,
+                                     Color attacker) {
+  const auto &pcs = b.pieces();
+  int s = int(sq);
 
-  for (auto const &m : attacks) {
-    if (m.to == sq)
+  // 1) Pawn attacks
+  if (attacker == Color::White) {
+    for (int off : {-9, -7}) {
+      int p = s + off;
+      if (onBoard(p) && pcs[p] == PieceType::Pawn &&
+          b.pieceColor(Square(p)) == Color::White)
+        return true;
+    }
+  } else { // Black
+    for (int off : {+7, +9}) {
+      int p = s + off;
+      if (onBoard(p) && pcs[p] == PieceType::Pawn &&
+          b.pieceColor(Square(p)) == Color::Black)
+        return true;
+    }
+  }
+
+  // 2) Knight attacks
+  for (int off : knightOffsets) {
+    int p = s + off;
+    if (!onBoard(p))
+      continue;
+    if (pcs[p] == PieceType::Knight && b.pieceColor(Square(p)) == attacker)
       return true;
   }
+
+  // 3) Rook & Queen (orthogonal)
+  for (int dir : {1, -1, 8, -8}) {
+    for (int p = s + dir; onBoard(p); p += dir) {
+      if (pcs[p] == PieceType::None)
+        continue;
+      if ((pcs[p] == PieceType::Rook || pcs[p] == PieceType::Queen) &&
+          b.pieceColor(Square(p)) == attacker)
+        return true;
+      break; // blocked by first piece
+    }
+  }
+
+  // 4) Bishop & Queen (diagonal)
+  for (int dir : {+7, +9, -7, -9}) {
+    int prevFile = s & 7; // file of the starting square
+    // step p outwards until we fall off the board or wrap
+    for (int p = s + dir; onBoard(p) && std::abs((p & 7) - prevFile) ==
+                                            1; // ensure no wrap-around
+         prevFile = (p & 7), p += dir) {
+      if (pcs[p] == PieceType::None)
+        continue; // empty square, keep sliding
+
+      // first non-empty square: hit or block
+      if ((pcs[p] == PieceType::Bishop || pcs[p] == PieceType::Queen) &&
+          b.pieceColor(Square(p)) == attacker)
+        return true;
+      break;
+    }
+  }
+
+  // 5) King adjacency
+  for (int off : KingOffsets) {
+    int p = s + off;
+    if (!onBoard(p))
+      continue;
+    if (pcs[p] == PieceType::King && b.pieceColor(Square(p)) == attacker)
+      return true;
+  }
+
   return false;
 }
