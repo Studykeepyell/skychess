@@ -56,7 +56,7 @@ void Board::setStartPosition() {
   kinSq_[static_cast<int>(Color::Black)] = Square(60);
 }
 
-std::vector<Move> Board::legalMoves() const {
+std::vector<Move> Board::legalMoves() const {           
   return MoveGenerator::generateLegal(*this);
 }
 
@@ -169,6 +169,9 @@ bool Board::makeMove(const Move &m) {
   squares_[m.from] = PieceType::None;
 
   colours_[m.from] = Color::None;
+  if (m.flags & MoveFlag::Promotion) {
+    squares_[m.to] = m.promo;
+  }
 
   if (squares_[m.to] == PieceType::Pawn) {
     int delta = int(m.to) - int(m.from);

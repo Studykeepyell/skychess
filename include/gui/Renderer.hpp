@@ -12,6 +12,7 @@ public:
   void draw(sf::RenderWindow &win, const chess::engine::Board &b,
             const std::vector<chess::engine::Move> &highlightedMoves = {},
             std::optional<chess::engine::Square> selected = std::nullopt);
+  void drawPromotionPanel(sf::RenderWindow &win,chess::engine::Color side, float tileSize);
 
 private:
   float tile_;

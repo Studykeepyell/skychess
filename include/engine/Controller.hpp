@@ -12,16 +12,22 @@ public:
 
   void run();
 
+
 private:
-  float tileSize = 80.0f;
+
+   float tileSize = 80.0f;
 
   sf::RenderWindow window_;
-  chess::engine::Board board_;
+  Board board_;
   chess::gui::Renderer render_;
 
-  std::optional<chess::engine::Square> selected_;
-  std::vector<chess::engine::Move> legalMoves_;
+  std::optional<Square> selected_;
+  std::vector<Move> legalMoves_;
+
+  std::vector<Move> promoOptions_;
+  bool promoPending = false;
 
   void handleClick(int x, int y);
+   Color              promoSide_       = Color::White;
 };
 } // namespace chess::engine

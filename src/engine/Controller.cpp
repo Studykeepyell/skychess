@@ -1,3 +1,6 @@
+#include "engine/Move.hpp"
+#include <SFML/Graphics/Rect.hpp>
+#include <SFML/System/Vector2.hpp>
 #include <engine/Controller.hpp>
 #include <iostream>
 #include <ostream>
@@ -26,46 +29,114 @@ void Controller::run() {
         std::cout << "beep" << std::endl;
       }
     }
-    window_.clear();
-    render_.draw(window_, board_, legalMoves_, selected_);
 
+
+    window_.clear();
+    render_.draw(window_,board_,legalMoves_,selected_);
+    if(promoPending){
+      render_.drawPromotionPanel(window_, promoSide_,tileSize);
+    }
     window_.display();
   }
 }
 
 void Controller::handleClick(int x, int y) {
-  // convert raw window pixel croods into worlds croods
+  // 1) Convert screen → board coords
+  sf::Vector2f world = window_.mapPixelToCoords({x, y});
+  int file = int(world.x / tileSize);
+  int rank = 7 - int(world.y / tileSize);
 
-  sf::Vector2f worldPos = window_.mapPixelToCoords({x, y});
-
-  // 2) Divide by your tile size to get file & rank in [0..8)
-  int file = static_cast<int>(worldPos.x / tileSize);
-  int rank = 7 - static_cast<int>(worldPos.y / tileSize);
-
-  if (file < 0 || file >= 8 || rank < 0 || rank >= 8) {
+  // 2) If we click off-board, clear everything
+  if (file < 0 || file > 7 || rank < 0 || rank > 7) {
     selected_.reset();
     legalMoves_.clear();
     return;
   }
+
   Square clicked = Square(rank * 8 + file);
 
+  // 3) If we’re in promo-mode, handle panel clicks first
+if (promoPending) {
+    // 1) Centered 2×2-tile panel
+    float panelSize = tileSize * 2.0f;
+    sf::Vector2f panelTL(
+      (640.0f - panelSize) * 0.5f,
+      (640.0f - panelSize) * 0.5f
+    );
+
+    // 2) Loop over the 4 promotion options
+    for (int i = 0; i < 4; ++i) {
+        // row = i/2, col = i%2
+      sf::FloatRect cell{
+        { panelTL.x + float(i%2) * tileSize,
+          panelTL.y + float(i/2) * tileSize },
+        { tileSize, tileSize }
+      };
+      
+        // Note: use screen coords here since x,y are pixels
+if (cell.contains(sf::Vector2f{ float(x), float(y) })) {
+    
+
+            // 1) commit the promotion move
+          board_.makeMove(promoOptions_[i]);
+          // 2) select the newly promoted piece
+          selected_ = promoOptions_[i].to;
+          // 3) re-compute its legal moves
+          legalMoves_.clear();
+          for (auto &m : board_.legalMoves()) {
+            if (m.from == selected_)
+              legalMoves_.push_back(m);
+          }
+          break;        }
+    }
+
+    // 4) Tear down the promotion-chooser state
+    promoPending   = false;
+    promoOptions_.clear();
+    return;
+}
+  
+  // 4) If a piece is already selected, see if we clicked one of its moves
   if (selected_) {
     for (auto &m : legalMoves_) {
       if (m.from == *selected_ && m.to == clicked) {
+        // -- Promotion?  Gather all 4 choices then show panel
+        if (m.flags & MoveFlag::Promotion) {
+          promoPending = true;
+          promoOptions_.clear();
+          // Collect *all* promotion variants for this destination
+          for (auto &pm : legalMoves_) {
+            if (pm.from == *selected_ &&
+                pm.to   == clicked   &&
+                (pm.flags & MoveFlag::Promotion))
+            {
+              promoOptions_.push_back(pm);
+            }
+          }
+          // Record which side’s icons to draw
+          promoSide_ = board_.pieceColor(*selected_);
+          return;
+        }
+
+        // -- Normal move
         board_.makeMove(m);
         selected_.reset();
         legalMoves_.clear();
         return;
       }
     }
+
+    // Clicked elsewhere: clear selection
+    selected_.reset();
+    legalMoves_.clear();
   }
 
+  // 5) No piece selected yet → pick this one and show its moves
   selected_ = clicked;
-  // Get the full list, then keep only those whose .from matches
-  auto all = board_.legalMoves();
   legalMoves_.clear();
-  for (auto &m : all) {
-    if (m.from == selected_)
+  for (auto &m : board_.legalMoves()) {
+    if (m.from == clicked)
       legalMoves_.push_back(m);
   }
 }
+
