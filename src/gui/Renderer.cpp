@@ -99,48 +99,75 @@ void Renderer::draw(sf::RenderWindow &win, const Board &board,
   }
 }
 
-void Renderer::drawPromotionPanel(sf::RenderWindow &win, Color side, float tileSize) {
+void Renderer::drawPromotionPanel(sf::RenderWindow &win, Color side,
+                                  float tileSize) {
   // panel size = two tiles per side, centered in 640×640
   float panelSize = tileSize * 2;
-  sf::Vector2f panelTL{ (640 - panelSize)/2, (640 - panelSize)/2 };
+  sf::Vector2f panelTL{(640 - panelSize) / 2, (640 - panelSize) / 2};
 
   // dark translucent overlay
-  sf::RectangleShape overlay({640,640});
-  overlay.setFillColor({0,0,0,150});
+  sf::RectangleShape overlay({640, 640});
+  overlay.setFillColor({0, 0, 0, 150});
   win.draw(overlay);
 
   // panel background
   sf::RectangleShape panel({panelSize, panelSize});
-  panel.setFillColor({200,200,200,230});
+  panel.setFillColor({200, 200, 200, 230});
   panel.setPosition(panelTL);
   win.draw(panel);
 
   // 4 options: queen, rook, bishop, knight
-  std::vector<PieceType> promos = {
-    PieceType::Queen,
-    PieceType::Rook,
-    PieceType::Bishop,
-    PieceType::Knight
-  };
+  std::vector<PieceType> promos = {PieceType::Queen, PieceType::Rook,
+                                   PieceType::Bishop, PieceType::Knight};
   for (int i = 0; i < 4; ++i) {
     int f = i % 2, r = i / 2;
     std::string key = (side == Color::White ? "W" : "B");
     switch (promos[i]) {
-      case PieceType::Queen:  key += "Q"; break;
-      case PieceType::Rook:   key += "R"; break;
-      case PieceType::Bishop: key += "B"; break;
-      case PieceType::Knight: key += "N"; break;
-      default: break;
+    case PieceType::Queen:
+      key += "Q";
+      break;
+    case PieceType::Rook:
+      key += "R";
+      break;
+    case PieceType::Bishop:
+      key += "B";
+      break;
+    case PieceType::Knight:
+      key += "N";
+      break;
+    default:
+      break;
     }
- // SFML3: getTexture() returns a reference, not a pointer
+    // SFML3: getTexture() returns a reference, not a pointer
     sf::Sprite s(pieceTextures_.at(key));
     auto texSize = s.getTexture().getSize();
-    s.setScale({ tileSize / float(texSize.x), tileSize / float(texSize.y) });
-       s.setPosition({
-      panelTL.x + f * tileSize,
-      panelTL.y + r * tileSize
-    });
+    s.setScale({tileSize / float(texSize.x), tileSize / float(texSize.y)});
+    s.setPosition({panelTL.x + f * tileSize, panelTL.y + r * tileSize});
     win.draw(s);
   }
 }
 
+PieceType Renderer::getPromotionChoice(sf::Vector2i mousePos, float tileSize) {
+  float panelSize = tileSize * 2;
+  sf::Vector2f panelTL{(640 - panelSize) / 2, (640 - panelSize) / 2};
+
+  // 1. Check if the click is even inside the panel
+  if (mousePos.x < panelTL.x || mousePos.x > panelTL.x + panelSize ||
+      mousePos.y < panelTL.y || mousePos.y > panelTL.y + panelSize) {
+    return PieceType::None;
+  }
+
+  // 2. Map the relative click to the 2x2 grid
+  int col = (mousePos.x - panelTL.x) / tileSize;
+  int row = (mousePos.y - panelTL.y) / tileSize;
+  int index = row * 2 + col;
+
+  std::vector<PieceType> promos = {
+      PieceType::Queen,  // Index 0: (0,0)
+      PieceType::Rook,   // Index 1: (1,0)
+      PieceType::Bishop, // Index 2: (0,1)
+      PieceType::Knight  // Index 3: (1,1)
+  };
+
+  return promos[index];
+}

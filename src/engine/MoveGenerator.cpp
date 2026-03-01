@@ -170,11 +170,11 @@ void MoveGenerator::genPawn(const Board &b, Square from,
     if (r == promoRank) {
       for (PieceType pt : {PieceType::Queen, PieceType::Bishop,
                            PieceType::Knight, PieceType::Rook}) {
-        Move m;
+        Move m{};
         m.from = from;
         m.to = Square(to);
         m.promo = pt;
-        m.flags |= MoveFlag::Promotion;
+        m.flags = MoveFlag::Promotion;
         out.push_back(m);
       }
     } else {

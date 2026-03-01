@@ -30,11 +30,10 @@ void Controller::run() {
       }
     }
 
-
     window_.clear();
-    render_.draw(window_,board_,legalMoves_,selected_);
-    if(promoPending){
-      render_.drawPromotionPanel(window_, promoSide_,tileSize);
+    render_.draw(window_, board_, legalMoves_, selected_);
+    if (promoPending) {
+      render_.drawPromotionPanel(window_, promoSide_, tileSize);
     }
     window_.display();
   }
@@ -54,48 +53,71 @@ void Controller::handleClick(int x, int y) {
   }
 
   Square clicked = Square(rank * 8 + file);
-
   // 3) If we’re in promo-mode, handle panel clicks first
-if (promoPending) {
-    // 1) Centered 2×2-tile panel
+  if (promoPending) {
     float panelSize = tileSize * 2.0f;
-    sf::Vector2f panelTL(
-      (640.0f - panelSize) * 0.5f,
-      (640.0f - panelSize) * 0.5f
-    );
+    sf::Vector2f panelTL((640.0f - panelSize) * 0.5f,
+                         (640.0f - panelSize) * 0.5f);
+
+    PieceType uiPromos[4] = {PieceType::Queen, PieceType::Rook,
+                             PieceType::Bishop, PieceType::Knight};
+
+    bool pieceClicked = false;
 
     // 2) Loop over the 4 promotion options
     for (int i = 0; i < 4; ++i) {
-        // row = i/2, col = i%2
-      sf::FloatRect cell{
-        { panelTL.x + float(i%2) * tileSize,
-          panelTL.y + float(i/2) * tileSize },
-        { tileSize, tileSize }
-      };
-      
-        // Note: use screen coords here since x,y are pixels
-if (cell.contains(sf::Vector2f{ float(x), float(y) })) {
-    
+      sf::FloatRect cell{{panelTL.x + float(i % 2) * tileSize,
+                          panelTL.y + float(i / 2) * tileSize},
+                         {tileSize, tileSize}};
 
-            // 1) commit the promotion move
-          board_.makeMove(promoOptions_[i]);
-          // 2) select the newly promoted piece
-          selected_ = promoOptions_[i].to;
-          // 3) re-compute its legal moves
-          legalMoves_.clear();
-          for (auto &m : board_.legalMoves()) {
-            if (m.from == selected_)
-              legalMoves_.push_back(m);
+      // FIX: Use 'world' coordinates instead of raw 'x' and 'y' pixels!
+      if (cell.contains(world)) {
+        pieceClicked = true;
+        PieceType chosenPiece = uiPromos[i];
+        std::cout << "[DEBUG] Clicked UI piece index: " << i << std::endl;
+
+        bool moveFound = false;
+        // Find the exact move in promoOptions_ that matches the chosen piece
+        for (auto &m : promoOptions_) {
+          if (m.promo == chosenPiece) {
+            std::cout << "[DEBUG] Match found! Making promotion move on board."
+                      << std::endl;
+            board_.makeMove(m);
+            selected_ = m.to;
+
+            // Re-compute legal moves for the new piece
+            legalMoves_.clear();
+            for (auto &new_m : board_.legalMoves()) {
+              if (new_m.from == selected_)
+                legalMoves_.push_back(new_m);
+            }
+
+            moveFound = true;
+            break;
           }
-          break;        }
+        }
+
+        if (!moveFound) {
+          std::cout << "[DEBUG] CRITICAL: Piece clicked, but no matching move "
+                       "in promoOptions_!"
+                    << std::endl;
+        }
+        break; // Break out of the 4-cell loop
+      }
+    }
+
+    if (!pieceClicked) {
+      std::cout
+          << "[DEBUG] Clicked outside the panel bounds. Cancelling promotion."
+          << std::endl;
     }
 
     // 4) Tear down the promotion-chooser state
-    promoPending   = false;
+    promoPending = false;
     promoOptions_.clear();
     return;
-}
-  
+  }
+
   // 4) If a piece is already selected, see if we clicked one of its moves
   if (selected_) {
     for (auto &m : legalMoves_) {
@@ -106,10 +128,8 @@ if (cell.contains(sf::Vector2f{ float(x), float(y) })) {
           promoOptions_.clear();
           // Collect *all* promotion variants for this destination
           for (auto &pm : legalMoves_) {
-            if (pm.from == *selected_ &&
-                pm.to   == clicked   &&
-                (pm.flags & MoveFlag::Promotion))
-            {
+            if (pm.from == *selected_ && pm.to == clicked &&
+                (pm.flags & MoveFlag::Promotion)) {
               promoOptions_.push_back(pm);
             }
           }
@@ -139,4 +159,3 @@ if (cell.contains(sf::Vector2f{ float(x), float(y) })) {
       legalMoves_.push_back(m);
   }
 }
-

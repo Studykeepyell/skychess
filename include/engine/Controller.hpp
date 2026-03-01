@@ -12,10 +12,8 @@ public:
 
   void run();
 
-
 private:
-
-   float tileSize = 80.0f;
+  float tileSize = 80.0f;
 
   sf::RenderWindow window_;
   Board board_;
@@ -28,6 +26,6 @@ private:
   bool promoPending = false;
 
   void handleClick(int x, int y);
-   Color              promoSide_       = Color::White;
+  Color promoSide_ = Color::White;
 };
 } // namespace chess::engine
